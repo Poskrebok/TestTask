@@ -1,79 +1,69 @@
 #include "familyview.h"
 
 
-FamilyTreeItem::FamilyTreeItem(FamilyTreeItem *parent)
+AbstractTreeItem::AbstractTreeItem(AbstractTreeItem *parent)
 {
     this->parentItem = parent;
+    if(parent)
+        parent->appendChild(this);
     numOfColumns = 1;
 }
 
-FamilyTreeItem::~FamilyTreeItem()
+AbstractTreeItem::~AbstractTreeItem()
 {
     qDeleteAll(childItems);
 }
 
-FamilyTreeItem *FamilyTreeItem::parent()
+void AbstractTreeItem::appendChild(AbstractTreeItem *child)
+{
+    childItems.append(child);
+}
+
+AbstractTreeItem *AbstractTreeItem::parent()
 {
     return parentItem;
 }
 
-FamilyTreeItem *FamilyTreeItem::child(int number)
+AbstractTreeItem *AbstractTreeItem::child(int number)
 {
     if (number < 0 || number >= childItems.size())
         return nullptr;
     return childItems.at(number);
 }
 
-int FamilyTreeItem::childCount() const
+int AbstractTreeItem::childCount() const
 {
     return childItems.count();
 }
 
-int FamilyTreeItem::childNumber() const
+int AbstractTreeItem::childNumber() const
 {
     if (parentItem)
-        return parentItem->childItems.indexOf(const_cast<FamilyTreeItem*>(this));
+        return parentItem->childItems.indexOf(const_cast<AbstractTreeItem*>(this));
     return 0;
 }
 
-int FamilyTreeItem::columnCount() const
+int AbstractTreeItem::columnCount() const
 {
     return numOfColumns;
 }
 
-QVariant FamilyTreeItem::data(int column) const
+QVariant AbstractTreeItem::data(int column) const
 {
     if (column < 0 || column >= numOfColumns)
         return QVariant();
-    if(column == 0)
-    {
-        return itemData.name;
-    }
     return QVariant();
 }
 
-bool FamilyTreeItem::insertChildren(int position, int count, int columns)
-{
-    if (position < 0 || position > childItems.size())
-        return false;
-
-    for (int row = 0; row < count; ++row) {
-        FamilyTreeItem *item = new FamilyTreeItem(this);
-        childItems.insert(position, item);
-    }
-
-    return true;
-}
-
-int FamilyTreeItem::row() const
+int AbstractTreeItem::row() const
 {
     if (parentItem)
-        return parentItem->childItems.indexOf(const_cast<FamilyTreeItem*>(this));
+        return parentItem->childItems.indexOf(const_cast<AbstractTreeItem*>(this));
 
     return 0;
 }
 
-bool FamilyTreeItem::removeChildren(int position, int count)
+bool AbstractTreeItem::removeChildren(int position, int count)
 {
     if (position < 0 || position + count > childItems.size())
         return false;
@@ -84,9 +74,48 @@ bool FamilyTreeItem::removeChildren(int position, int count)
     return true;
 }
 
+
+
+QVariant FamilyTreeItem::data(int column) const
+{
+    if (column < 0 || column >= numOfColumns)
+        return QVariant();
+    if(column == 0)
+    {
+        QString name = this->itemData.name;
+        return name;
+    }
+    return QVariant();
+}
+
+bool FamilyTreeItem::setData(const Family &value)
+{
+    itemData = value;
+}
+
+
+QVariant MemberTreeItem::data(int column) const
+{
+    if (column < 0 || column >= numOfColumns)
+        return QVariant();
+    if(column == 0)
+    {
+        QString name = QString("%1 %1 %3").arg(itemData.mname).arg(itemData.fname).arg(itemData.lname);
+        return name;
+    }
+    return QVariant();
+}
+
+bool MemberTreeItem::setData(const Member &value)
+{
+    itemData = value;
+}
+
+
+
 FamilyModel::FamilyModel(QObject *parent):QAbstractItemModel(parent)
 {
-    rootItem = new FamilyTreeItem();
+    rootItem = new AbstractTreeItem();
 }
 
 FamilyModel::~FamilyModel()
@@ -102,7 +131,7 @@ QVariant FamilyModel::data(const QModelIndex &index, int role) const
     if (role != Qt::DisplayRole)
         return QVariant();
 
-    FamilyTreeItem *item = static_cast<FamilyTreeItem*>(index.internalPointer());
+    AbstractTreeItem *item = static_cast<AbstractTreeItem*>(index.internalPointer());
 
     return item->data(index.column());
 }
@@ -128,14 +157,14 @@ QModelIndex FamilyModel::index(int row, int column, const QModelIndex &parent) c
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    FamilyTreeItem *parentItem;
+    AbstractTreeItem *parentItem;
 
     if (!parent.isValid())
         parentItem = rootItem;
     else
-        parentItem = static_cast<FamilyTreeItem*>(parent.internalPointer());
+        parentItem = static_cast<AbstractTreeItem*>(parent.internalPointer());
 
-    FamilyTreeItem *childItem = parentItem->child(row);
+    AbstractTreeItem *childItem = parentItem->child(row);
     if (childItem)
         return createIndex(row, column, childItem);
     return QModelIndex();
@@ -146,8 +175,8 @@ QModelIndex FamilyModel::parent(const QModelIndex &index) const
     if (!index.isValid())
             return QModelIndex();
 
-        FamilyTreeItem *childItem = static_cast<FamilyTreeItem*>(index.internalPointer());
-        FamilyTreeItem *parentItem = childItem->parent();
+    AbstractTreeItem *childItem = static_cast<AbstractTreeItem*>(index.internalPointer());
+    AbstractTreeItem *parentItem = childItem->parent();
 
         if (parentItem == rootItem)
             return QModelIndex();
@@ -157,14 +186,14 @@ QModelIndex FamilyModel::parent(const QModelIndex &index) const
 
 int FamilyModel::rowCount(const QModelIndex &parent) const
 {
-    FamilyTreeItem *parentItem;
+        AbstractTreeItem *parentItem;
     if (parent.column() > 0)
         return 0;
 
     if (!parent.isValid())
         parentItem = rootItem;
     else
-        parentItem = static_cast<FamilyTreeItem*>(parent.internalPointer());
+        parentItem = static_cast<AbstractTreeItem*>(parent.internalPointer());
 
     return parentItem->childCount();
 }
@@ -172,10 +201,6 @@ int FamilyModel::rowCount(const QModelIndex &parent) const
 int FamilyModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
-        return static_cast<FamilyTreeItem*>(parent.internalPointer())->columnCount();
+        return static_cast<AbstractTreeItem*>(parent.internalPointer())->columnCount();
     return rootItem->columnCount();
 }
-
-
-
-

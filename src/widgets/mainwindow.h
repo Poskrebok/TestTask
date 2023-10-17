@@ -8,10 +8,12 @@
 #include "QFormLayout"
 #include "QTableView"
 
+
 #include "maindb.h"
 #include "familyview.h"
 #include "dialogs.h"
 #include "plotcontroller.h"
+
 
 class MainWindow : public QMainWindow
 {
@@ -27,7 +29,7 @@ private:
 private slots:
     void addMember();
     void addFamily();
-    void readDB(QList<Family>);
+    void readDB();
 signals:
     void sendMemberToDb(QString fname, QString mname, QString lname, QDateTime bdate, QString gender);
     void sendFamilyToDb(QString name);

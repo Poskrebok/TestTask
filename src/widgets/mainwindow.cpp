@@ -1,5 +1,8 @@
 #include "mainwindow.h"
-
+#include "QMenuBar"
+#include "QAction"
+#include "QStatusBar"
+#include "QTreeView"
 
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags):QMainWindow(parent,flags)
 {
@@ -47,8 +50,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags):QMainWindow(paren
     FamilyModel *familyModel = new FamilyModel(operationsTable);
     operationsTable->setModel(familyModel);
 
-    QChartView *chartView = new QChartView(tabWidget);
-    tabWidget->addTab(chartView,QString("Графики"));
+//    QChartView *chartView = new QChartView(tabWidget);
+//    tabWidget->addTab(chartView,QString("Графики"));
 
     maindb = new Maindb();
 
@@ -60,7 +63,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags):QMainWindow(paren
     connect(this,&MainWindow::sendMemberToDb,maindb,&Maindb::addMember);
     connect(this,&MainWindow::sendFamilyToDb,maindb,&Maindb::addFamily);
 
-    connect(maindb,&Maindb::sendFamilyList,this,&MainWindow::readDB);
 }
 
 
@@ -91,7 +93,7 @@ void MainWindow::addFamily()
     delete dialog;
 }
 
-void MainWindow::readDB(QList<Family>)
+void MainWindow::readDB()
 {
 
 }

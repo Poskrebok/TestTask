@@ -6,36 +6,55 @@
 #include "common.h"
 
 
-class FamilyTreeItem
+class AbstractTreeItem
 {
 public:
-    explicit FamilyTreeItem(FamilyTreeItem *parent = nullptr);
-    ~FamilyTreeItem();
+    explicit AbstractTreeItem(AbstractTreeItem *parent = nullptr);
+    virtual ~AbstractTreeItem();
 
-    FamilyTreeItem *child(int number);
+    void appendChild(AbstractTreeItem *child);
+    AbstractTreeItem *child(int number);
     int childCount() const;
     int columnCount() const;
 
-    QVariant data(int column) const;
-    bool insertChildren(int position, int count, int columns);
+    virtual QVariant data(int column) const;
 
     int row() const;
-    FamilyTreeItem *parent();
+    AbstractTreeItem *parent();
     bool removeChildren(int position, int count);
 
     int childNumber() const;
-    bool setData(int column, const entity &value);
 
-    bool isPerson(){return itemData.isPerson;}
+protected:
 
-private:
-
-    QList<FamilyTreeItem *> childItems;
-    entity itemData;
-    FamilyTreeItem *parentItem;
+    QList<AbstractTreeItem *> childItems;
+    AbstractTreeItem *parentItem;
 
     int numOfColumns;
+};
 
+class FamilyTreeItem:AbstractTreeItem
+{
+public:
+    explicit FamilyTreeItem(AbstractTreeItem *parent = nullptr):AbstractTreeItem(parent){}
+    ~FamilyTreeItem(){}
+
+    QVariant data(int column) const override;
+    bool setData(const Family &value) ;
+private:
+    Family itemData;
+};
+
+class MemberTreeItem:AbstractTreeItem
+{
+public:
+    explicit MemberTreeItem(AbstractTreeItem *parent = nullptr):AbstractTreeItem(parent){}
+    ~MemberTreeItem(){}
+
+    QVariant data(int column) const override;
+    bool setData(const Member &value) ;
+private:
+    Member itemData;
 };
 
 class FamilyModel: public QAbstractItemModel
@@ -56,9 +75,9 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    void setupModelData(FamilyTreeItem *parent);
+    void setupModelData(AbstractTreeItem *parent);
 private:
-    FamilyTreeItem *rootItem;
+    AbstractTreeItem *rootItem;
 };
 
 #endif // FAMILYVIEW_H

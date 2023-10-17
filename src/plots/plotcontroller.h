@@ -1,8 +1,8 @@
 #ifndef PLOTCONTROLLER_H
 #define PLOTCONTROLLER_H
 
-#include <QtCharts>
-#include "QChartView"
+//#include <QtCharts>
+//#include "QChartView"
 
 class PlotController
 {

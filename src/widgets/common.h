@@ -3,6 +3,7 @@
 #include "QString"
 #include "QDateTime"
 
+
 struct Member
 {
     int id = 0;
@@ -19,9 +20,5 @@ struct Family
     QString name;
 };
 
-struct entity{
-    int id;
-    QStringList name;
-    bool isPerson;
-};
+
 #endif // COMMON_H

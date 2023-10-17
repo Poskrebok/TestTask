@@ -1,6 +1,6 @@
 
 QT += sql
-QT += charts
+#QT += charts
 
 INCLUDEPATH += \
     $$PWD/widgets \

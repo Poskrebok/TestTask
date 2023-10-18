@@ -10,7 +10,7 @@
 
 
 #include "maindb.h"
-#include "familyview.h"
+#include "familymodel.h"
 #include "dialogs.h"
 #include "plotcontroller.h"
 
@@ -26,10 +26,11 @@ private:
     QMenuBar *menubar;
     QStatusBar *statusbar;
     Maindb *maindb;
+    FamilyModel *model;
 private slots:
     void addMember();
     void addFamily();
-    void readDB();
+    void reciveModel(AbstractTreeItem *);
 signals:
     void sendMemberToDb(QString fname, QString mname, QString lname, QDateTime bdate, QString gender);
     void sendFamilyToDb(QString name);

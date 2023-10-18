@@ -1,10 +1,25 @@
-#ifndef FAMILYVIEW_H
-#define FAMILYVIEW_H
+#ifndef COMMON_H
+#define COMMON_H
+#include "QString"
+#include "QDateTime"
+#include "qvariant.h"
 
 
-#include "QAbstractItemModel"
-#include "common.h"
+struct Member
+{
+    int id = 0;
+    QString fname;
+    QString mname;
+    QString lname;
+    QDateTime bdate;
+    QString gender;
+};
 
+struct Family
+{
+    int id = 0;
+    QString name;
+};
 
 class AbstractTreeItem
 {
@@ -13,7 +28,9 @@ public:
     virtual ~AbstractTreeItem();
 
     void appendChild(AbstractTreeItem *child);
+    void appendParent(AbstractTreeItem *parent);
     AbstractTreeItem *child(int number);
+    void removeChild(AbstractTreeItem* child);
     int childCount() const;
     int columnCount() const;
 
@@ -33,7 +50,7 @@ protected:
     int numOfColumns;
 };
 
-class FamilyTreeItem:AbstractTreeItem
+class FamilyTreeItem:public AbstractTreeItem
 {
 public:
     explicit FamilyTreeItem(AbstractTreeItem *parent = nullptr):AbstractTreeItem(parent){}
@@ -45,7 +62,7 @@ private:
     Family itemData;
 };
 
-class MemberTreeItem:AbstractTreeItem
+class MemberTreeItem:public AbstractTreeItem
 {
 public:
     explicit MemberTreeItem(AbstractTreeItem *parent = nullptr):AbstractTreeItem(parent){}
@@ -57,27 +74,4 @@ private:
     Member itemData;
 };
 
-class FamilyModel: public QAbstractItemModel
-{
-    Q_OBJECT
-
-public:
-    explicit FamilyModel(QObject *parent = nullptr);
-    ~FamilyModel();
-
-    QVariant data(const QModelIndex &index, int role) const override;
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-                        int role = Qt::DisplayRole) const override;
-    QModelIndex index(int row, int column,
-                      const QModelIndex &parent = QModelIndex()) const override;
-    QModelIndex parent(const QModelIndex &index) const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-
-    void setupModelData(AbstractTreeItem *parent);
-private:
-    AbstractTreeItem *rootItem;
-};
-
-#endif // FAMILYVIEW_H
+#endif // COMMON_H

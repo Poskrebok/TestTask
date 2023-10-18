@@ -6,27 +6,23 @@
 #include <QSqlDatabase>
 #include <QDateTime>
 #include "common.h"
-
-
+#include "QMap"
 class Maindb : public QObject
 {
     Q_OBJECT
 public:
     explicit Maindb(QObject *parent = nullptr);
-
+    QMap<quint16, FamilyTreeItem *> recivieFamilyList();
+    QMap<quint16,MemberTreeItem *> reciveMemberList();
+    QVector<QPair<quint16,quint16>> reciveConnectionList();
 public slots:
     bool addMember(QString fname, QString mname, QString lname, QDateTime bdate, QString gender);
     bool addFamily(QString name);
-    QList<Family> recivieFamilyList();
-    QList<Member> reciveMemberByFamily(int id);
-    QList<Member> reciveNonAlignetMembers();
-
+    AbstractTreeItem *reciveModel();
 
 signals:
     void dbupdated();
-    void sendFamilyList(QList<Family>);
-    void sendMemberList(QList<Member>);
-
+    void sendModel(AbstractTreeItem*);
 private:
     QSqlDatabase dbs;
     void createDB();

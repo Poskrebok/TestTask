@@ -2,7 +2,7 @@
 #include "QMenuBar"
 #include "QAction"
 #include "QStatusBar"
-#include "QTreeView"
+#include "qtreeview.h"
 
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags):QMainWindow(parent,flags)
 {
@@ -41,6 +41,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags):QMainWindow(paren
     sizePolicy.setHeightForWidth(membersTable->sizePolicy().hasHeightForWidth());
     membersTable->setSizePolicy(sizePolicy);
     mainlo->addWidget(membersTable);
+    model = new FamilyModel();
+    membersTable->setModel(model);
 
     QTabWidget *tabWidget  = new QTabWidget(centralwidget);
     mainlo->addWidget(tabWidget);
@@ -58,13 +60,14 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags):QMainWindow(paren
     connect(exit,&QAction::triggered,this,&MainWindow::close);
     connect(addMember,&QAction::triggered,this,&MainWindow::addMember);
     connect(addFamily,&QAction::triggered,this,&MainWindow::addFamily);
-    connect(update,&QAction::triggered,maindb,&Maindb::recivieFamilyList);
 
     connect(this,&MainWindow::sendMemberToDb,maindb,&Maindb::addMember);
     connect(this,&MainWindow::sendFamilyToDb,maindb,&Maindb::addFamily);
 
-}
+    connect(update,&QAction::triggered,maindb,&Maindb::reciveModel);
+    connect(maindb,&Maindb::sendModel,this,&MainWindow::reciveModel);
 
+}
 
 MainWindow::~MainWindow()
 {
@@ -93,7 +96,8 @@ void MainWindow::addFamily()
     delete dialog;
 }
 
-void MainWindow::readDB()
+void MainWindow::reciveModel(AbstractTreeItem* data)
 {
+    model->setupModelData(data);
 
 }

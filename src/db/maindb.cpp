@@ -22,32 +22,91 @@ Maindb::Maindb(QObject *parent)
     }
 }
 
-QList<Family> Maindb::recivieFamilyList()
+QMap<quint16,FamilyTreeItem*> Maindb::recivieFamilyList()
 {
-    QList<Family> list;
+    QMap<quint16,FamilyTreeItem*> list;
     QSqlQuery query;
-    query.prepare(QString("SELECT idFamily, name FROM Family"));
+    query.prepare(QString("SELECT idFamily, name, deleted FROM Family"));
     query.exec();
     QSqlRecord rec = query.record();
     while(query.next())
     {
+        if(query.value(rec.indexOf("deleted")).toInt() == 1)
+            continue;
         Family family;
         family.id = query.value(rec.indexOf("idFamily")).toInt();
         family.name = query.value(rec.indexOf("name")).toString();
-        list.append(family);
+        FamilyTreeItem *item = new FamilyTreeItem();
+        item->setData(family);
+        list.insert(family.id,item);
     }
-    emit sendFamilyList(list);
     return list;
 }
 
-QList<Member> Maindb::reciveMemberByFamily(int id)
+QMap<quint16, MemberTreeItem *> Maindb::reciveMemberList()
 {
-
+    QMap<quint16,MemberTreeItem *> list;
+    QSqlQuery query;
+    query.prepare(QString("SELECT idMember, first_name, last_name, middle_name, date_of_birth, gender, deleted FROM Members"));
+    query.exec();
+    QSqlRecord rec = query.record();
+    while(query.next())
+    {
+        if(query.value(rec.indexOf("deleted")).toInt() == 1)
+            continue;
+        Member member;
+        member.id = query.value(rec.indexOf("idMember")).toInt();
+        member.fname = query.value(rec.indexOf("first_name")).toString();
+        member.lname = query.value(rec.indexOf("last_name")).toString();
+        member.mname = query.value(rec.indexOf("middle_name")).toString();
+        member.bdate = query.value(rec.indexOf("date_of_birth")).toDateTime();
+        member.gender = query.value(rec.indexOf("gender")).toString();
+        MemberTreeItem *item = new MemberTreeItem();
+        item->setData(member);
+        list.insert(member.id,item);
+    }
+    return list;
 }
 
-QList<Member> Maindb::reciveNonAlignetMembers()
+QVector<QPair<quint16, quint16> > Maindb::reciveConnectionList()
 {
+    QSqlQuery query;
+    query.prepare(QString("SELECT idMember, idFamily FROM Family_Connection"));
+    query.exec();
+    QVector<QPair<quint16, quint16> > vector;
+    QSqlRecord rec = query.record();
+    while(query.next())
+    {
+        QPair<quint16, quint16> connect;
+        connect.first = query.value(rec.indexOf("idFamily")).toInt();
+        connect.second = query.value(rec.indexOf("idMember")).toInt();
+        vector.append(connect);
+    }
+    return vector;
+}
 
+AbstractTreeItem *Maindb::reciveModel()
+{
+    AbstractTreeItem *item = new AbstractTreeItem();
+    auto families = this->recivieFamilyList();
+    auto members = this->reciveMemberList();
+    auto connections = this->reciveConnectionList();
+    for (auto i : members)
+    {
+        i->appendParent(item);
+    }
+    for(auto i : families)
+    {
+        i->appendParent(item);
+    }
+    for(auto i : connections)
+    {
+        auto member = members.value(i.second);
+        auto family = families.value(i.first);
+        member->appendParent(family);
+    }
+    emit sendModel(item);
+    return item;
 }
 
 bool Maindb::addMember(QString fname,QString mname,QString lname,QDateTime bdate,QString gender)

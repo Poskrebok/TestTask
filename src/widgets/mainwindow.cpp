@@ -47,10 +47,16 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags):QMainWindow(paren
     QTabWidget *tabWidget  = new QTabWidget(centralwidget);
     mainlo->addWidget(tabWidget);
 
-    operationsTable = new QTableView(tabWidget);
-    tabWidget->addTab(operationsTable, QString("Таблица операций"));
-    FamilyModel *familyModel = new FamilyModel(operationsTable);
-    operationsTable->setModel(familyModel);
+    QVBoxLayout *layout = new QVBoxLayout(tabWidget);
+    QWidget *widget = new QWidget(tabWidget);
+    widget->setLayout(layout);
+    incomeOperationsTable = new QTableView(tabWidget);
+    outcomeOperationsTable = new QTableView(tabWidget);
+    layout->addWidget(incomeOperationsTable);
+    layout->addWidget(outcomeOperationsTable);
+    tabWidget->addTab(incomeOperationsTable, QString("Таблица операций"));
+
+
 
 //    QChartView *chartView = new QChartView(tabWidget);
 //    tabWidget->addTab(chartView,QString("Графики"));
@@ -79,13 +85,15 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags):QMainWindow(paren
 
     membersTable->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(membersTable, &QTreeView::customContextMenuRequested,this,&MainWindow::onContextMenuFamilyControl);
+    connect(membersTable,&QTreeView::clicked,this,&MainWindow::onEntityClicked);
 
-
-    operationsTable->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(operationsTable, &QTreeView::customContextMenuRequested,this,&MainWindow::onContextMenuFamilyControl);
+    incomeOperationsTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(incomeOperationsTable, &QTreeView::customContextMenuRequested,this,&MainWindow::onContextMenuFamilyControl);
 
     connect(this,&MainWindow::createConnection,maindb,&Maindb::addConnection);
     connect(this,&MainWindow::breakConnection,maindb,&Maindb::removeConnection);
+
+
 }
 
 MainWindow::~MainWindow()
@@ -171,7 +179,7 @@ void MainWindow::onContextMenuFamilyControl(const QPoint &pos)
 void MainWindow::onContextMenuOperationsControl(const QPoint &pos)
 {
     QMenu menu;
-    QModelIndex index = operationsTable->indexAt(pos);
+    QModelIndex index = incomeOperationsTable->indexAt(pos);
     if(!index.isValid())
     {
         menu.addAction("Добавить запись о расходах", this, [=](){
@@ -192,4 +200,9 @@ void MainWindow::onContextMenuOperationsControl(const QPoint &pos)
     }
 
     menu.exec(QCursor::pos());
+}
+
+void MainWindow::onEntityClicked(const QModelIndex &index)
+{
+
 }

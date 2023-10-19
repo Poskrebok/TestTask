@@ -31,7 +31,9 @@ private:
     FamilyModel *model;
 
     QTreeView *membersTable;
-    QTableView *operationsTable;
+    QTableView *incomeOperationsTable;
+    QTableView *outcomeOperationsTable;
+
 private slots:
     void addMember();
     void addFamily();
@@ -39,6 +41,8 @@ private slots:
 
     void onContextMenuFamilyControl(const QPoint &pos);
     void onContextMenuOperationsControl(const QPoint &pos);
+
+    void onEntityClicked(const QModelIndex &index);
 signals:
     void sendMemberToDb(QString fname, QString mname, QString lname, QDateTime bdate, QString gender);
     void sendFamilyToDb(QString name);

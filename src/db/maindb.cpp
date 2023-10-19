@@ -5,24 +5,32 @@
 #include <QSqlQuery>
 #include <QFile>
 
+
 Maindb::Maindb(QObject *parent)
     : QObject{parent}
+{
+
+
+}
+
+void Maindb::initDB()
 {
     dbs = QSqlDatabase::addDatabase("QSQLITE");
 
     bool check = QFile::exists("db.sqlite");
     dbs.setDatabaseName("db.sqlite");
     if (!dbs.open()) {
-          qDebug() << dbs.lastError().text();
+        qDebug() << dbs.lastError().text();
     }
     QSqlQuery query;
     if(!check)
     {
         createDB();
     }
+
 }
 
-QMap<quint16,FamilyTreeItem*> Maindb::recivieFamilyList()
+QMap<quint16,FamilyTreeItem*> Maindb::recivieFamilyMap()
 {
     QMap<quint16,FamilyTreeItem*> list;
     QSqlQuery query;
@@ -43,7 +51,7 @@ QMap<quint16,FamilyTreeItem*> Maindb::recivieFamilyList()
     return list;
 }
 
-QMap<quint16, MemberTreeItem *> Maindb::reciveMemberList()
+QMap<quint16, MemberTreeItem *> Maindb::reciveMemberMap()
 {
     QMap<quint16,MemberTreeItem *> list;
     QSqlQuery query;
@@ -85,11 +93,11 @@ QVector<QPair<quint16, quint16> > Maindb::reciveConnectionList()
     return vector;
 }
 
-AbstractTreeItem *Maindb::reciveModel()
+AbstractTreeItem *Maindb::reciveFamilyModel()
 {
     AbstractTreeItem *item = new AbstractTreeItem();
-    auto families = this->recivieFamilyList();
-    auto members = this->reciveMemberList();
+    auto families = this->recivieFamilyMap();
+    auto members = this->reciveMemberMap();
     auto connections = this->reciveConnectionList();
     for (auto i : members)
     {
@@ -109,6 +117,26 @@ AbstractTreeItem *Maindb::reciveModel()
     return item;
 }
 
+QList<Family> Maindb::reciveFamilyList()
+{
+    QList<Family> list;
+    QSqlQuery query;
+    query.prepare(QString("SELECT idFamily, name, deleted FROM Family"));
+    query.exec();
+    QSqlRecord rec = query.record();
+    while(query.next())
+    {
+        if(query.value(rec.indexOf("deleted")).toInt() == 1)
+            continue;
+        Family family;
+        family.id = query.value(rec.indexOf("idFamily")).toInt();
+        family.name = query.value(rec.indexOf("name")).toString();
+        list.append(family);
+    }
+    emit sendFamilyList(list);
+    return list;
+}
+
 bool Maindb::addMember(QString fname,QString mname,QString lname,QDateTime bdate,QString gender)
 {
     QSqlQuery query;
@@ -126,6 +154,13 @@ bool Maindb::addMember(QString fname,QString mname,QString lname,QDateTime bdate
     return true;
 }
 
+bool Maindb::deleteMember(quint16 id)
+{
+    //delete from members;
+    //delete from connections;
+
+}
+
 bool Maindb::addFamily(QString name)
 {
     QSqlQuery query;
@@ -137,6 +172,66 @@ bool Maindb::addFamily(QString name)
         return false;
     emit dbupdated();
     return true;
+}
+
+bool Maindb::deleteFamily(quint16 id)
+{
+    //delete from members;
+    //delete from connections;
+
+}
+
+bool Maindb::addConnection(quint16 idMember, quint16 idFamily)
+{
+    QSqlQuery query;
+    query.prepare("INSERT INTO \"Family_Connection\"(idMember,idFamily) "
+                  "VALUES (:idMember,:idFamily);");
+    query.bindValue(":idMember", idMember);
+    query.bindValue(":idFamily", idFamily);
+    if(!query.exec())
+        return false;
+    emit dbupdated();
+    return true;
+}
+
+bool Maindb::removeConnection(quint16 idMember, quint16 idFamily)
+{
+
+}
+
+bool Maindb::addOutcomeOperation()
+{
+
+}
+
+bool Maindb::addIncomeOperation()
+{
+
+}
+
+bool Maindb::addIncomeSource()
+{
+
+}
+
+bool Maindb::addGoodsCategory()
+{
+
+}
+
+bool Maindb::addGoods()
+{
+
+}
+
+bool Maindb::removeGoodsCategory(quint16 id)
+{
+
+}
+
+bool Maindb::removeGoods(quint16)
+{
+
 }
 
 void Maindb::createDB()

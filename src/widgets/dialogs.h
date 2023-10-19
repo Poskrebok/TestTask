@@ -9,6 +9,7 @@
 #include "qdatetimeedit.h"
 #include "qlineedit.h"
 #include "common.h"
+#include <qcombobox.h>
 
 
 class MemberDialog: public QDialog
@@ -18,15 +19,15 @@ public:
     MemberDialog(QWidget *parent = 0);
     ~MemberDialog();
 
-    void setData(Member member);
-    Member getData();
+    void setMember(Member member);
+
+    Member getMember();
 private:
     QLineEdit *fnameEdit;
     QLineEdit *mnameEdit;
     QLineEdit *lnameEdit;
     QDateTimeEdit *dtEdit;
     QLineEdit *genderEdit;
-
 };
 
 class FamilyDialog: public QDialog
@@ -40,7 +41,15 @@ public:
     Family getData();
 private:
     QLineEdit *name;
+};
 
+class OperationDialog:public QDialog
+{
+    Q_OBJECT
+public:
+    OperationDialog(QWidget *parent = nullptr);
+    ~OperationDialog();
+private:
 };
 
 

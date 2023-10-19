@@ -27,6 +27,7 @@ MemberDialog::MemberDialog(QWidget *parent):QDialog(parent)
     layout->addRow(QString("Фамилия"),lnameEdit);
     layout->addRow(QString("Дата/Время"),dtEdit);
     layout->addRow(QString("Пол"),genderEdit);
+
     layout->addWidget(btnBox);
 
     connect(btnBox, &QDialogButtonBox::accepted,this,&MemberDialog::accept);
@@ -41,7 +42,7 @@ MemberDialog::~MemberDialog()
 
 }
 
-void MemberDialog::setData(Member member)
+void MemberDialog::setMember(Member member)
 {
     fnameEdit->setText(member.fname);
     mnameEdit->setText(member.mname);
@@ -50,7 +51,7 @@ void MemberDialog::setData(Member member)
     genderEdit->setText(member.gender);
 }
 
-Member MemberDialog::getData()
+Member MemberDialog::getMember()
 {
     Member member;
     member.bdate = dtEdit->dateTime();
@@ -99,4 +100,14 @@ Family FamilyDialog::getData()
     Family family;
     family.name = name->text();
     return family;
+}
+
+OperationDialog::OperationDialog(QWidget *parent)
+{
+
+}
+
+OperationDialog::~OperationDialog()
+{
+
 }

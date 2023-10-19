@@ -1,9 +1,5 @@
 #include "familymodel.h"
 
-
-
-
-
 FamilyModel::FamilyModel(QObject *parent):QAbstractItemModel(parent)
 {
     rootItem = new AbstractTreeItem();
@@ -101,4 +97,19 @@ void FamilyModel::setupModelData(AbstractTreeItem *root)
     beginResetModel();
     rootItem = root;
     endResetModel();
+}
+
+QList<Family> FamilyModel::getFamilies()
+{
+    auto childList = rootItem->getChildrens();
+    QList<Family> familyList;
+    for(auto i : childList)
+    {
+        FamilyTreeItem* item  = dynamic_cast<FamilyTreeItem*>(i);
+        if(item != nullptr)
+        {
+            familyList.append(item->getItemData());
+        }
+    }
+    return familyList;
 }

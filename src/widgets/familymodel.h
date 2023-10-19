@@ -27,6 +27,9 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
     void setupModelData(AbstractTreeItem *root);
+    AbstractTreeItem *getData(){return rootItem;}
+
+    QList<Family> getFamilies();
 private:
     AbstractTreeItem *rootItem;
 };

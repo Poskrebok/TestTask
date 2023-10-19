@@ -22,7 +22,7 @@ void AbstractTreeItem::appendChild(AbstractTreeItem *child)
 void AbstractTreeItem::appendParent(AbstractTreeItem *parent)
 {
     if(parentItem)
-        parentItem->removeChild(this);
+        parentItem->detachChild(this);
     this->parentItem = parent;
     if(parent)
         parent->appendChild(this);
@@ -40,7 +40,7 @@ AbstractTreeItem *AbstractTreeItem::child(int number)
     return childItems.at(number);
 }
 
-void AbstractTreeItem::removeChild(AbstractTreeItem *child)
+void AbstractTreeItem::detachChild(AbstractTreeItem *child)
 {
     if(!childItems.contains(child))
         return;
@@ -52,13 +52,6 @@ void AbstractTreeItem::removeChild(AbstractTreeItem *child)
 int AbstractTreeItem::childCount() const
 {
     return childItems.count();
-}
-
-int AbstractTreeItem::childNumber() const
-{
-    if (parentItem)
-        return parentItem->childItems.indexOf(const_cast<AbstractTreeItem*>(this));
-    return 0;
 }
 
 int AbstractTreeItem::columnCount() const

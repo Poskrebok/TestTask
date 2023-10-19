@@ -29,8 +29,12 @@ public:
 
     void appendChild(AbstractTreeItem *child);
     void appendParent(AbstractTreeItem *parent);
+    void detachChild(AbstractTreeItem* child);
+    bool removeChildren(int position, int count);
+    QList<AbstractTreeItem *> getChildrens(){return childItems;}
     AbstractTreeItem *child(int number);
-    void removeChild(AbstractTreeItem* child);
+
+
     int childCount() const;
     int columnCount() const;
 
@@ -38,9 +42,6 @@ public:
 
     int row() const;
     AbstractTreeItem *parent();
-    bool removeChildren(int position, int count);
-
-    int childNumber() const;
 
 protected:
 
@@ -49,7 +50,6 @@ protected:
 
     int numOfColumns;
 };
-
 class FamilyTreeItem:public AbstractTreeItem
 {
 public:
@@ -58,6 +58,8 @@ public:
 
     QVariant data(int column) const override;
     bool setData(const Family &value) ;
+
+    Family getItemData(){return itemData;}
 private:
     Family itemData;
 };
@@ -70,6 +72,8 @@ public:
 
     QVariant data(int column) const override;
     bool setData(const Member &value) ;
+
+    Member getItemData(){return itemData;}
 private:
     Member itemData;
 };

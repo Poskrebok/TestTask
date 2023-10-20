@@ -7,7 +7,7 @@
 #include <QDateTime>
 #include "common.h"
 #include "QMap"
-#include " QSqlQueryModel"
+#include "QSqlQueryModel"
 
 class Maindb : public QObject
 {
@@ -32,9 +32,9 @@ public slots:
     bool removeConnection(quint16 idMember, quint16 idFamily);
 
     bool addOutcomeOperation(quint16 id,QDateTime dt, int spendings, QString comment,quint16 idGoods);
-    bool changeOutcomeOperation(quint16 id, quint16 idMember, QDateTime dt, int spendings, QString comment, quint16 idGoods);
+    bool changeOutcomeOperation(quint16 id, QDateTime dt, int spendings, QString comment, quint16 idGoods);
     bool addIncomeOperation(quint16 id, QDateTime dt, int income, QString comment, quint16 idSource);
-    bool changeIncomeOperation(quint16 id, quint16 idMember, QDateTime dt, int income, QString comment, quint16 idSource);
+    bool changeIncomeOperation(quint16 id, QDateTime dt, int income, QString comment, quint16 idSource);
 
     bool addIncomeSource(QString name);
 
@@ -57,8 +57,8 @@ signals:
     void dbupdated();
     void sendModel(AbstractTreeItem*);
     void sendFamilyList(QList<Family>);
-    void sendIncomeOperations( QSqlQueryModel*);
-    void sendOutcomeOperations( QSqlQueryModel*);
+    void sendIncomeOperations(QSqlQueryModel*);
+    void sendOutcomeOperations(QSqlQueryModel*);
 
 private:
     QSqlDatabase dbs;

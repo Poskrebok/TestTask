@@ -305,7 +305,7 @@ bool Maindb::addOutcomeOperation(quint16 id,QDateTime dt, int spendings, QString
     return true;
 }
 
-bool Maindb::changeOutcomeOperation(quint16 id, quint16 idMember,QDateTime dt, int spendings, QString comment,quint16 idGoods)
+bool Maindb::changeOutcomeOperation(quint16 id,QDateTime dt, int spendings, QString comment,quint16 idGoods)
 {
     QSqlQuery query;
     query.prepare("UPDATE Outcome_operations SET (idMember, date, spendings, comment, idGoods) "
@@ -328,7 +328,7 @@ bool Maindb::addIncomeOperation(quint16 id, QDateTime dt, int income, QString co
                   "VALUES(:idMember, :date, :income, :comment, :idSource)");
     query.bindValue(":idMember",id);
     query.bindValue(":date",dt.toMSecsSinceEpoch());
-    query.bindValue(":spendings",income);
+    query.bindValue(":income",income);
     query.bindValue(":comment",comment);
     query.bindValue(":idGoods",idSource);
     if(query.exec())
@@ -336,7 +336,7 @@ bool Maindb::addIncomeOperation(quint16 id, QDateTime dt, int income, QString co
     return true;
 }
 
-bool Maindb::changeIncomeOperation(quint16 id, quint16 idMember, QDateTime dt, int income, QString comment, quint16 idSource)
+bool Maindb::changeIncomeOperation(quint16 id, QDateTime dt, int income, QString comment, quint16 idSource)
 {
     QSqlQuery query;
     query.prepare("UPDATE Outcome_operations SET (idMember, date, income, comment, idSource) "

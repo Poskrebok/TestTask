@@ -102,12 +102,66 @@ Family FamilyDialog::getData()
     return family;
 }
 
-OperationDialog::OperationDialog(QWidget *parent)
+IncomeOperationDialog::IncomeOperationDialog(QWidget *parent):QDialog(parent)
 {
+    QFormLayout *layout = new QFormLayout(this);
 
+    source = 0;//заглушка
+
+    income = new QSpinBox(this);
+    dtEdit = new QDateTimeEdit(this);
+    comment = new QLineEdit(this);
+
+    QDialogButtonBox *btnBox = new QDialogButtonBox(this);
+    QPushButton *btnAccept = new QPushButton(btnBox);
+    btnAccept->setText(QString("Сохранить изменения"));
+
+    QPushButton *btnReject = new QPushButton(btnBox);
+    btnReject->setText(QString("Отмена"));
+
+    btnBox->addButton(btnAccept,QDialogButtonBox::AcceptRole);
+    btnBox->addButton(btnReject,QDialogButtonBox::RejectRole);
+
+    layout->addRow(QString("Доход"),income);
+    layout->addRow(QString("Дата/Время"),dtEdit);
+    layout->addRow(QString("Комментарий"),comment);
+
+    layout->addWidget(btnBox);
+
+    connect(btnBox, &QDialogButtonBox::accepted,this,&MemberDialog::accept);
+    connect(btnBox, &QDialogButtonBox::rejected,this,&MemberDialog::reject);
+
+    this->setLayout(layout);
 }
 
-OperationDialog::~OperationDialog()
+OutcomeOperationDialog::OutcomeOperationDialog(QWidget *parent):QDialog(parent)
 {
+    QFormLayout *layout = new QFormLayout(this);
 
+    goodsId = 0;//заглушка
+
+    outcome = new QSpinBox(this);
+    dtEdit = new QDateTimeEdit(this);
+    comment = new QLineEdit(this);
+
+    QDialogButtonBox *btnBox = new QDialogButtonBox(this);
+    QPushButton *btnAccept = new QPushButton(btnBox);
+    btnAccept->setText(QString("Сохранить изменения"));
+
+    QPushButton *btnReject = new QPushButton(btnBox);
+    btnReject->setText(QString("Отмена"));
+
+    btnBox->addButton(btnAccept,QDialogButtonBox::AcceptRole);
+    btnBox->addButton(btnReject,QDialogButtonBox::RejectRole);
+
+    layout->addRow(QString("Расход"),outcome);
+    layout->addRow(QString("Дата/Время"),dtEdit);
+    layout->addRow(QString("Комментарий"),comment);
+
+    layout->addWidget(btnBox);
+
+    connect(btnBox, &QDialogButtonBox::accepted,this,&MemberDialog::accept);
+    connect(btnBox, &QDialogButtonBox::rejected,this,&MemberDialog::reject);
+
+    this->setLayout(layout);
 }

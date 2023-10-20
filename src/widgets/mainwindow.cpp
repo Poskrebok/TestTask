@@ -54,12 +54,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags):QMainWindow(paren
     outcomeOperationsTable = new QTableView(tabWidget);
     layout->addWidget(incomeOperationsTable);
     layout->addWidget(outcomeOperationsTable);
-    tabWidget->addTab(incomeOperationsTable, QString("Таблица операций"));
-
-
-
-//    QChartView *chartView = new QChartView(tabWidget);
-//    tabWidget->addTab(chartView,QString("Графики"));
+    tabWidget->addTab(widget, QString("Таблица операций"));
     maindb = new Maindb();
 
 
@@ -69,31 +64,44 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags):QMainWindow(paren
     thread->start();
     maindb->moveToThread(thread);
 
-
-    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
-
     connect(exit,&QAction::triggered,this,&MainWindow::close);
     connect(addMember,&QAction::triggered,this,&MainWindow::addMember);
     connect(addFamily,&QAction::triggered,this,&MainWindow::addFamily);
 
     connect(this,&MainWindow::sendMemberToDb,maindb,&Maindb::addMember);
     connect(this,&MainWindow::sendFamilyToDb,maindb,&Maindb::addFamily);
-    
-    connect(update,&QAction::triggered,maindb,&Maindb::reciveFamilyModel);
-    connect(this,&MainWindow::updatebd,maindb,&Maindb::reciveFamilyModel);
-    connect(maindb,&Maindb::sendModel,this,&MainWindow::reciveModel);
 
     membersTable->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(membersTable, &QTreeView::customContextMenuRequested,this,&MainWindow::onContextMenuFamilyControl);
     connect(membersTable,&QTreeView::clicked,this,&MainWindow::onEntityClicked);
 
     incomeOperationsTable->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(incomeOperationsTable, &QTreeView::customContextMenuRequested,this,&MainWindow::onContextMenuFamilyControl);
+    connect(incomeOperationsTable, &QTreeView::customContextMenuRequested,this,&MainWindow::onContextMenuIncomeOperationsControl);
+    outcomeOperationsTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(outcomeOperationsTable, &QTreeView::customContextMenuRequested,this,&MainWindow::onContextMenuOutcomeOperationsControl);
+
+    connect(maindb,&Maindb::sendIncomeOperations,this,&MainWindow::incomeOperationsModelHandler);
+    connect(maindb,&Maindb::sendOutcomeOperations,this,&MainWindow::outcomeOperationsModelHandler);
+    
+    connect(update,&QAction::triggered,maindb,&Maindb::reciveFamilyModel);
+    connect(this,&MainWindow::updatebd,maindb,&Maindb::reciveFamilyModel);
+    connect(this,&MainWindow::updatebd,this,[=](){
+        onEntityClicked(membersTable->currentIndex());
+    });
+    connect(maindb,&Maindb::sendModel,this,&MainWindow::reciveModel);
+
+    connect(this,&MainWindow::toReciveIncomeOperationsByMember,maindb,&Maindb::operationsIncomeByMember);
+    connect(this,&MainWindow::toReciveIncomeOperationsByFamily,maindb,&Maindb::operationsIncomeByFamily);
+    connect(this,&MainWindow::toReciveOutcomeOperationsByMember,maindb,&Maindb::operationsOutcomeByMember);
+    connect(this,&MainWindow::toReciveOutcomeOperationsByFamily,maindb,&Maindb::operationsOutcomeByFamily);
 
     connect(this,&MainWindow::createConnection,maindb,&Maindb::addConnection);
     connect(this,&MainWindow::breakConnection,maindb,&Maindb::removeConnection);
 
-
+    connect(this,&MainWindow::createOperationIncomeRecord,maindb,&Maindb::addIncomeOperation);
+    connect(this,&MainWindow::createOperationOutcomeRecord,maindb,&Maindb::addOutcomeOperation);
+    connect(this,&MainWindow::changeOperationIncomeRecord,maindb,&Maindb::changeIncomeOperation);
+    connect(this,&MainWindow::changeOperationOutcomeRecord,maindb,&Maindb::changeOutcomeOperation);
 }
 
 MainWindow::~MainWindow()
@@ -176,33 +184,84 @@ void MainWindow::onContextMenuFamilyControl(const QPoint &pos)
     menu.exec(QCursor::pos());
 }
 
-void MainWindow::onContextMenuOperationsControl(const QPoint &pos)
+void MainWindow::onContextMenuIncomeOperationsControl(const QPoint &pos)
 {
     QMenu menu;
     QModelIndex index = incomeOperationsTable->indexAt(pos);
+    QModelIndex memberIndex = membersTable->currentIndex();
+    AbstractTreeItem *entity = static_cast<AbstractTreeItem*>(memberIndex.internalPointer());
+    MemberTreeItem *member = dynamic_cast<MemberTreeItem*>(entity);
+    if(member == nullptr)
+        return;
+    if(!index.isValid())
+    {
+        menu.addAction("Добавить запись о доходах", this, [=](){
+            IncomeOperationDialog dialog;
+            if(dialog.exec())
+            {
+                auto id = member->getItemData().id;
+                emit createOperationIncomeRecord(id, dialog.getDT(),dialog.getIncome(),dialog.getComment(),dialog.getSourceId());
+            }
+        });
+    }
+    emit updatebd();
+    menu.exec(QCursor::pos());
+}
+
+void MainWindow::onContextMenuOutcomeOperationsControl(const QPoint &pos)
+{
+    QMenu menu;
+    QModelIndex index = outcomeOperationsTable->indexAt(pos);
+    QModelIndex memberIndex = membersTable->currentIndex();
+    AbstractTreeItem *entity = static_cast<AbstractTreeItem*>(memberIndex.internalPointer());
+    MemberTreeItem *member = dynamic_cast<MemberTreeItem*>(entity);
+    if(member == nullptr)
+        return;
     if(!index.isValid())
     {
         menu.addAction("Добавить запись о расходах", this, [=](){
-
-        });
-        menu.addAction("Добавить запись о доходах", this, [=](){
-
-        });
-    }
-    if(index.isValid())
-    {
-        menu.addAction("Редактировать запись о расходах", this, [=](){
-
-        });
-        menu.addAction("Редактировать запись о доходах", this, [=](){
-
+            OutcomeOperationDialog dialog;
+            if(dialog.exec())
+            {
+                auto id = member->getItemData().id;
+                emit createOperationOutcomeRecord(id, dialog.getDT(),dialog.getOutcome(),dialog.getComment(),dialog.getGoodsId());
+            }
         });
     }
-
+    emit updatebd();
     menu.exec(QCursor::pos());
 }
 
 void MainWindow::onEntityClicked(const QModelIndex &index)
 {
+    if(!index.isValid())
+        return;
+    auto data = static_cast<AbstractTreeItem*>(index.internalPointer());
+    auto family = dynamic_cast<FamilyTreeItem*>(data);
+    auto member = dynamic_cast<MemberTreeItem*>(data);
+    if(family == nullptr)
+    {
+        emit toReciveIncomeOperationsByMember(member->getItemData().id);
+        emit toReciveOutcomeOperationsByMember(member->getItemData().id);
+    }
+    if(member == nullptr)
+    {
+        emit toReciveIncomeOperationsByFamily(family->getItemData().id);
+        emit toReciveOutcomeOperationsByFamily(family->getItemData().id);
+    }
 
+}
+
+void MainWindow::incomeOperationsModelHandler(QSqlQueryModel *model)
+{
+    auto toDelete = incomeOperationsTable->model();
+    incomeOperationsTable->setModel(model);
+    delete toDelete;
+}
+
+void MainWindow::outcomeOperationsModelHandler(QSqlQueryModel *model)
+{
+    auto toDelete = outcomeOperationsTable->model();
+    outcomeOperationsTable->setModel(model);
+    delete toDelete;
 }
